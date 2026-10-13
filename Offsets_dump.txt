@@ -1,0 +1,528 @@
+// Standoff 2 — metadata v31 dump (names/tokens only)
+// RVAs require UnityFramework + Il2CppDumper. Tokens usable for token-based resolve.
+// Game: Axlebolt.Standoff
+
+// === UnityEngine (clean names) ===
+// UnityEngine.Camera::WorldToScreenPoint
+//   methodIndex=118283  token=0x060000F3
+
+// UnityEngine.Camera::get_fieldOfView
+//   methodIndex=118243  token=0x060000CB
+
+// UnityEngine.Camera::get_main
+//   methodIndex=118294  token=0x060000FE
+
+// UnityEngine.Component::get_gameObject
+//   methodIndex=119750  token=0x060006AE
+
+// UnityEngine.Component::get_transform
+//   methodIndex=119749  token=0x060006AD
+
+// UnityEngine.Display::get_main
+//   methodIndex=118537  token=0x060001F1
+
+// UnityEngine.EventSystems.PointerEventData::get_position
+//   methodIndex=127052  token=0x06000095
+
+// UnityEngine.EventSystems.PointerEventData::set_position
+//   methodIndex=127053  token=0x06000096
+
+// UnityEngine.GameObject::get_activeSelf
+//   methodIndex=119818  token=0x060006F2
+
+// UnityEngine.GameObject::get_transform
+//   methodIndex=119814  token=0x060006EE
+
+// UnityEngine.Object::get_name
+//   methodIndex=119920  token=0x06000758
+
+// UnityEngine.ParticleSystem::get_main
+//   methodIndex=143199  token=0x06000012
+
+// UnityEngine.RaycastHit::get_transform
+//   methodIndex=140857  token=0x0600005C
+
+// UnityEngine.Rect::get_position
+//   methodIndex=118430  token=0x06000186
+
+// UnityEngine.Rect::set_position
+//   methodIndex=118431  token=0x06000187
+
+// UnityEngine.RectTransformUtility::WorldToScreenPoint
+//   methodIndex=142668  token=0x06000031
+
+// UnityEngine.Rigidbody::get_position
+//   methodIndex=140876  token=0x0600006F
+
+// UnityEngine.Rigidbody::get_rotation
+//   methodIndex=140877  token=0x06000070
+
+// UnityEngine.TextEditor::get_localPosition
+//   methodIndex=135768  token=0x0600023E
+
+// UnityEngine.TextEditor::get_position
+//   methodIndex=135766  token=0x0600023C
+
+// UnityEngine.TextEditor::set_position
+//   methodIndex=135767  token=0x0600023D
+
+// UnityEngine.Tilemaps.Tile::get_transform
+//   methodIndex=143235  token=0x0600000A
+
+// UnityEngine.Timeline.AnimationPlayableAsset::get_position
+//   methodIndex=139679  token=0x0600015E
+
+// UnityEngine.Timeline.AnimationPlayableAsset::get_rotation
+//   methodIndex=139681  token=0x06000160
+
+// UnityEngine.Timeline.AnimationPlayableAsset::set_position
+//   methodIndex=139680  token=0x0600015F
+
+// UnityEngine.Timeline.AnimationPlayableAsset::set_rotation
+//   methodIndex=139682  token=0x06000161
+
+// UnityEngine.Timeline.AnimationTrack::get_position
+//   methodIndex=139332  token=0x06000003
+
+// UnityEngine.Timeline.AnimationTrack::get_rotation
+//   methodIndex=139334  token=0x06000005
+
+// UnityEngine.Timeline.AnimationTrack::set_position
+//   methodIndex=139333  token=0x06000004
+
+// UnityEngine.Timeline.AnimationTrack::set_rotation
+//   methodIndex=139335  token=0x06000006
+
+// UnityEngine.Touch::get_position
+//   methodIndex=142776  token=0x06000002
+
+// UnityEngine.Touch::set_position
+//   methodIndex=142777  token=0x06000003
+
+// UnityEngine.Transform::get_forward
+//   methodIndex=120163  token=0x0600084B
+
+// UnityEngine.Transform::get_localPosition
+//   methodIndex=120155  token=0x06000843
+
+// UnityEngine.Transform::get_position
+//   methodIndex=120153  token=0x06000841
+
+// UnityEngine.Transform::get_rotation
+//   methodIndex=120164  token=0x0600084C
+
+// UnityEngine.Transform::set_localPosition
+//   methodIndex=120156  token=0x06000844
+
+// UnityEngine.Transform::set_position
+//   methodIndex=120154  token=0x06000842
+
+// UnityEngine.Transform::set_rotation
+//   methodIndex=120165  token=0x0600084D
+
+// UnityEngine.UI.ICanvasElement::get_transform
+//   methodIndex=128458  token=0x06000613
+
+// UnityEngine.UI.LayoutRebuilder::get_transform
+//   methodIndex=127552  token=0x06000289
+
+// UnityEngine.UIElements.ComputedStyle::get_position
+//   methodIndex=82215  token=0x06000DED
+
+// UnityEngine.UIElements.IPointerEvent::get_localPosition
+//   methodIndex=81714  token=0x06000BF8
+
+// UnityEngine.UIElements.IPointerEvent::get_position
+//   methodIndex=81713  token=0x06000BF7
+
+// UnityEngine.UIElements.IStyle::set_position
+//   methodIndex=83472  token=0x060012D6
+
+// UnityEngine.UIElements.ITransform::get_position
+//   methodIndex=78981  token=0x0600014B
+
+// UnityEngine.UIElements.ITransform::set_position
+//   methodIndex=78982  token=0x0600014C
+
+// UnityEngine.UIElements.ITransform::set_rotation
+//   methodIndex=78983  token=0x0600014D
+
+// UnityEngine.UIElements.PointerEventBase`1::get_localPosition
+//   methodIndex=81747  token=0x06000C19
+
+// UnityEngine.UIElements.PointerEventBase`1::get_position
+//   methodIndex=81745  token=0x06000C17
+
+// UnityEngine.UIElements.PointerEventBase`1::set_localPosition
+//   methodIndex=81748  token=0x06000C1A
+
+// UnityEngine.UIElements.PointerEventBase`1::set_position
+//   methodIndex=81746  token=0x06000C18
+
+// UnityEngine.UIElements.StyleSheets.InitialStyle::get_position
+//   methodIndex=84166  token=0x0600158C
+
+// UnityEngine.UIElements.TextEditorEngine::get_localPosition
+//   methodIndex=80904  token=0x060008CE
+
+// UnityEngine.UIElements.VisualElement::get_transform
+//   methodIndex=79332  token=0x060002AA
+
+// UnityEngine.Vector3::get_forward
+//   methodIndex=119374  token=0x06000536
+
+// === Axlebolt.Standoff.Player.PlayerController (obfuscated) ===
+// typeIndex=2782  methodStart=16669  count=164
+// [16669] get_AEGGFHEGDACDBDD  token=0x0600411E
+// [16670] set_AEGGFHEGDACDBDD  token=0x0600411F
+// [16671] get_DHHBDHHFDEEHDDA  token=0x06004120
+// [16672] set_DHHBDHHFDEEHDDA  token=0x06004121
+// [16673] get_HDFDDHHEAGCFFFG  token=0x06004122
+// [16674] set_HDFDDHHEAGCFFFG  token=0x06004123
+// [16675] get_DFCFCCABBACFHGA  token=0x06004124
+// [16676] set_DFCFCCABBACFHGA  token=0x06004125
+// [16677] get_BCEHBACHDCBGDDA  token=0x06004126
+// [16678] set_BCEHBACHDCBGDDA  token=0x06004127
+// [16679] get_HGHEDCDCECBEBFH  token=0x06004128
+// [16680] set_HGHEDCDCECBEBFH  token=0x06004129
+// [16681] get_AGADEFBAEEHCDFF  token=0x0600412A
+// [16682] set_AGADEFBAEEHCDFF  token=0x0600412B
+// [16683] get_DHCDCBAGBDBFDGA  token=0x0600412C
+// [16684] set_DHCDCBAGBDBFDGA  token=0x0600412D
+// [16685] get_FBBAFHADGDGFCAF  token=0x0600412E
+// [16686] set_FBBAFHADGDGFCAF  token=0x0600412F
+// [16687] get_GFHDBGEEDCDEDDE  token=0x06004130
+// [16688] set_GFHDBGEEDCDEDDE  token=0x06004131
+// [16689] get_FBHEHABCGEFGGAC  token=0x06004132
+// [16690] set_FBHEHABCGEFGGAC  token=0x06004133
+// [16691] get_GGBFBEGHHGCCBGD  token=0x06004134
+// [16692] get_FCFFFCDEGHDGGBB  token=0x06004135
+// [16693] get_BBHGHCAEBEDFDGE  token=0x06004136
+// [16694] get_BDAGBEGGBDAEAGC  token=0x06004137
+// [16695] set_BDAGBEGGBDAEAGC  token=0x06004138
+// [16696] get_AHEGCAADDHFCHDH  token=0x06004139
+// [16697] set_AHEGCAADDHFCHDH  token=0x0600413A
+// [16698] get_DDCGCDDAHCFGAAA  token=0x0600413B
+// [16699] set_DDCGCDDAHCFGAAA  token=0x0600413C
+// [16700] get_EBGAGEHBBCBACAB  token=0x0600413D
+// [16701] set_EBGAGEHBBCBACAB  token=0x0600413E
+// [16702] get_EBBGHCEGFEGADCC  token=0x0600413F
+// [16703] get_HDEEHEHCBECFHBA  token=0x06004140
+// [16704] get_EGHCBHHCCBGEGAF  token=0x06004141
+// [16705] set_EGHCBHHCCBGEGAF  token=0x06004142
+// [16706] get_HGAHDFGGHAFGEFB  token=0x06004143
+// [16707] set_HGAHDFGGHAFGEFB  token=0x06004144
+// [16708] get_CCGFHBGBCBDBFDD  token=0x06004145
+// [16709] set_CCGFHBGBCBDBFDD  token=0x06004146
+// [16710] get_EBEABDDAEGGDCAH  token=0x06004147
+// [16711] set_EBEABDDAEGGDCAH  token=0x06004148
+// [16712] get_BEAGHGCHBCAGGDH  token=0x06004149
+// [16713] get_FAFCFFABDEEBFAH  token=0x0600414A
+// [16714] get_GECAGBEAEBCFFAC  token=0x0600414B
+// [16715] set_GECAGBEAEBCFFAC  token=0x0600414C
+// [16716] get_FBDCEGCEGEBCACB  token=0x0600414D
+// [16717] set_FBDCEGCEGEBCACB  token=0x0600414E
+// [16718] get_HDEEAEBEFHFHHDB  token=0x0600414F
+// [16719] set_HDEEAEBEFHFHHDB  token=0x06004150
+// [16720] get_DDAAEECEBADEDBF  token=0x06004151
+// [16721] set_DDAAEECEBADEDBF  token=0x06004152
+// [16722] get_HBBBCEFBCFEFBBA  token=0x06004153
+// [16723] set_HBBBCEFBCFEFBBA  token=0x06004154
+// [16724] .cctor  token=0x06004155
+// [16725] DGFGBABDHABEBDH  token=0x06004156
+// [16726] FGFAGDBGCEEAGCF  token=0x06004157
+// [16727] HEFEDBDABADHDGC  token=0x06004158
+// [16728] BHHHAGBEBCDGGDF  token=0x06004159
+// [16729] HGDFACGHFDFDABE  token=0x0600415A
+// [16730] EBCHAHGHAGBBGDH  token=0x0600415B
+// [16731] BFDECBEAGBGCCDB  token=0x0600415C
+// [16732] AADFFDGDFHBBECG  token=0x0600415D
+// [16733] AHGEHCDACDDCDCG  token=0x0600415E
+// [16734] GACHEEHCGHHAHAG  token=0x0600415F
+// [16735] DCCACAHADAHHEEA  token=0x06004160
+// [16736] ECEFFHDAGEFHHDC  token=0x06004161
+// [16737] GEEBFDHEDBDEDFB  token=0x06004162
+// [16738] CHGAHFGGCEAEGGA  token=0x06004163
+// [16739] GGGGEABGEGEGGBD  token=0x06004164
+// [16740] HBEFHDHGAADBDCH  token=0x06004165
+// [16741] CFGCDEGDBCCDAGC  token=0x06004166
+// [16742] ECACGAGGHFBEGBA  token=0x06004167
+// [16743] GEDCDABGFFCDCEE  token=0x06004168
+// [16744] AHBGGEHHBCDCBAH  token=0x06004169
+// [16745] CGFDDDAEAAEGDFF  token=0x0600416A
+// [16746] GEBBBBBHCEHGDFH  token=0x0600416B
+// [16747] GEBCGGEBCGDFCFH  token=0x0600416C
+// [16748] HEBEACABDGHDCDG  token=0x0600416D
+// [16749] HDACGADFHEFHDGB  token=0x0600416E
+// [16750] GADGBDDEHGFGHGA  token=0x0600416F
+// [16751] FAEFFAHCGEEGBHE  token=0x06004170
+// [16752] FHAGDGHGECDCDHF  token=0x06004171
+// [16753] CGBCHEEBBEEFAEH  token=0x06004172
+// [16754] GEEEGCHHEGFGEAH  token=0x06004173
+// [16755] AGCAABCABEFCDAD  token=0x06004174
+// [16756] AFDGHFBEFADEFCE  token=0x06004175
+// [16757] HGEBEGCBADCAFCH  token=0x06004176
+// [16758] GCFDFHFEBHGAGGA  token=0x06004177
+// [16759] EAFEBDCCCGACBDE  token=0x06004178
+// [16760] HEFDFAHBEGGHFGC  token=0x06004179
+// [16761] ACEDAHEBFHBDGBA  token=0x0600417A
+// [16762] EAHAHEEEBFDEDEE  token=0x0600417B
+// [16763] DDFEDAHEAFCDFCE  token=0x0600417C
+// [16764] DEBHCBCBGCFFEGD  token=0x0600417D
+// [16765] GCFCCCCBCBCFFEB  token=0x0600417E
+// [16766] ACDGAFHAGCEGGAA  token=0x0600417F
+// [16767] FHFGBAEEFHEEBEB  token=0x06004180
+// [16768] GGFHGHDEHFFEHHA  token=0x06004181
+// [16769] FBHAEBEFFDGFFCE  token=0x06004182
+// [16770] GEGDBCCAFCDHEAH  token=0x06004183
+// [16771] CGEGDGDACCBGCBH  token=0x06004184
+// [16772] CCCFBGFEEHECFDB  token=0x06004185
+// [16773] EBAFBAAAFBBBAEE  token=0x06004186
+// [16774] GECBFGCDEEHCDHB  token=0x06004187
+// [16775] BECHDBFGDADCGDD  token=0x06004188
+// [16776] GEHGCABBEEFBACE  token=0x06004189
+// [16777] CEDCECGCDFGHDDG  token=0x0600418A
+// [16778] GGADDHHDAFHCHGD  token=0x0600418B
+// [16779] EDAHHFEDHEEABHD  token=0x0600418C
+// [16780] CDBFBGCCBCGHFEC  token=0x0600418D
+// [16781] EDCEFGEGAHEAAEG  token=0x0600418E
+// [16782] AAEDEDCEDCADEBG  token=0x0600418F
+// [16783] GEBAGADCEGCGHBG  token=0x06004190
+// [16784] CHHEHCHAHBHCDEB  token=0x06004191
+// [16785] HFEDGHGHGCGFDGF  token=0x06004192
+// [16786] DBHBDCGBHBEHDBE  token=0x06004193
+// [16787] EBHBHGBABFGFHBC  token=0x06004194
+// [16788] GEEEAABCFDACEAG  token=0x06004195
+// [16789] CGHFFBCFCHHCAAA  token=0x06004196
+// [16790] FGDEHHDDEDFFEBB  token=0x06004197
+// [16791] FCFEGFHHFHHBDDE  token=0x06004198
+// [16792] DHEEAEBCFCFBBDG  token=0x06004199
+// [16793] AHBCDFDCDAGBHEG  token=0x0600419A
+// [16794] HAEEFHHBFEEGFHH  token=0x0600419B
+// [16795] CCHAAGHDDABHDDC  token=0x0600419C
+// [16796] BGFDHCBAHHEBEHE  token=0x0600419D
+// [16797] DDDCEAABGBHDADC  token=0x0600419E
+// [16798] EGAECDFFFDEBFGH  token=0x0600419F
+// [16799] Update  token=0x060041A0
+// [16800] LateUpdate  token=0x060041A1
+// [16801] OnPhotonInstantiate  token=0x060041A2
+// [16802] AFFBBFBAEAFDCEA  token=0x060041A3
+// [16803] InstantiateViaServer  token=0x060041A4
+// [16804] EHGGBFABBAHFGHF  token=0x060041A5
+// [16805] SetArmorViaServer  token=0x060041A6
+// [16806] CCHHFFDCBDCECBH  token=0x060041A7
+// [16807] CancelUntouchableViaServer  token=0x060041A8
+// [16808] CCDECEHHGCFFDEH  token=0x060041A9
+// [16809] AGHBECABDHEGGCA  token=0x060041AA
+// [16810] CDDBCBFGHBAADBC  token=0x060041AB
+// [16811] GHGGFEBBHCHGHHB  token=0x060041AC
+// [16812] CGEGCDHHGGAGFFE  token=0x060041AD
+// [16813] HAFACGEGCGBBDGF  token=0x060041AE
+// [16814] HAAGEDGBEHBBGFB  token=0x060041AF
+// [16815] AAFDCHHGCDHDHGG  token=0x060041B0
+// [16816] DBFFGFDBGBFGEEE  token=0x060041B1
+// [16817] HHBBHBBAHDDFFCC  token=0x060041B2
+// [16818] BFHCBGHEGHCFFAC  token=0x060041B3
+// [16819] AHAAFHEDHGHGHCE  token=0x060041B4
+// [16820] AECDGDFACEDFACG  token=0x060041B5
+// [16821] BHAHEDHEEEEGECG  token=0x060041B6
+// [16822] GAHGFGCGCCDBCGG  token=0x060041B7
+// [16823] BDEGEBDHDCHFCFA  token=0x060041B8
+// [16824] CCBDHDDFCGHCCDH  token=0x060041B9
+// [16825] FBGHECCHCBFAFFF  token=0x060041BA
+// [16826] GFDEHGCFHEBEDFE  token=0x060041BB
+// [16827] DieViaServer  token=0x060041BC
+// [16828] FAEDFHHCADCEEDH  token=0x060041BD
+// [16829] CCFDHEAEADHBCCD  token=0x060041BE
+// [16830] CDFCBABEBBCEDCE  token=0x060041BF
+// [16831] EEHDFBEACDDBFEG  token=0x060041C0
+// [16832] .ctor  token=0x060041C1
+
+// === Axlebolt.Standoff.Player.Aim.AimController ===
+// typeIndex=2930 count=61
+// [18011] get_ABACHHFAFFBBEGE  token=0x0600465C
+// [18012] set_ABACHHFAFFBBEGE  token=0x0600465D
+// [18013] get_AEGGFHEGDACDBDD  token=0x0600465E
+// [18014] set_AEGGFHEGDACDBDD  token=0x0600465F
+// [18015] get_HDDHEDGDFDCEADB  token=0x06004660
+// [18016] set_HDDHEDGDFDCEADB  token=0x06004661
+// [18017] get_BGABBBEEBFDBEAD  token=0x06004662
+// [18018] .ctor  token=0x06004663
+// [18019] EHBDGAEGADEFEBH  token=0x06004664
+// [18020] HGFAFBBHAGEHACD  token=0x06004665
+// [18021] DGFGBABDHABEBDH  token=0x06004666
+// [18022] FGFAGDBGCEEAGCF  token=0x06004667
+// [18023] FBEFHHFFACAEEEF  token=0x06004668
+// [18024] CAFACDBAGECGCDD  token=0x06004669
+// [18025] HCDDEDCCDCFHHAE  token=0x0600466A
+// [18026] FDEDFCDHCDGCCCD  token=0x0600466B
+// [18027] GFGAEGCAABHHCEA  token=0x0600466C
+// [18028] BGCCFHHGDFGCFEB  token=0x0600466D
+// [18029] BHAHDCEAFECAEAB  token=0x0600466E
+// [18030] HHGCAFDHGDGAGCD  token=0x0600466F
+// [18031] AAEDEDCEDCADEBG  token=0x06004670
+// [18032] GEGDBCCAFCDHEAH  token=0x06004671
+// [18033] AFHBDECAECBFAFG  token=0x06004672
+// [18034] CGEHBBBHECABDEB  token=0x06004673
+// [18035] FHAGFDFBAHEACHH  token=0x06004674
+// [18036] FADDHGCGDEACEGD  token=0x06004675
+// [18037] HAEEFHHBFEEGFHH  token=0x06004676
+// [18038] CCHAAGHDDABHDDC  token=0x06004677
+// [18039] CHHEHCHAHBHCDEB  token=0x06004678
+// [18040] HFEDGHGHGCGFDGF  token=0x06004679
+// [18041] DBHBDCGBHBEHDBE  token=0x0600467A
+// [18042] EBHBHGBABFGFHBC  token=0x0600467B
+// [18043] GEEEAABCFDACEAG  token=0x0600467C
+// [18044] EHDGAFGBFGGHHHE  token=0x0600467D
+// [18045] AFFFCAHCAFCBHFG  token=0x0600467E
+// [18046] DDHCHGHBHEFEEFH  token=0x0600467F
+// [18047] DEHAHHDADHAHCEA  token=0x06004680
+// [18048] BFHGCEFDBFHCGCB  token=0x06004681
+// [18049] HGAGEBGBFEFHFGG  token=0x06004682
+// [18050] EBCAHHAFDHFFHGF  token=0x06004683
+// [18051] DEAEHCGGFEBCFAD  token=0x06004684
+// [18052] GDGDEDDDHGECCBF  token=0x06004685
+// [18053] CDGBEDGFEGCHBEA  token=0x06004686
+// [18054] DFGGDGEGHFGEBDF  token=0x06004687
+// [18055] BBCGHDEADECDBHE  token=0x06004688
+// [18056] FGGBFDGBHHAHEDH  token=0x06004689
+// [18057] FBGFHCCFAGCGGFE  token=0x0600468A
+// [18058] FCGDGEGGADBFFEB  token=0x0600468B
+// [18059] HDHFAGBGDCEGEEB  token=0x0600468C
+// [18060] HGBGHDFECDAFCBC  token=0x0600468D
+// [18061] BDCDCCACCGFDCDE  token=0x0600468E
+// [18062] CAEGFHABCFGDADC  token=0x0600468F
+// [18063] BABAHEEFECHEHGH  token=0x06004690
+// [18064] HFGHFEHGEDAAEHA  token=0x06004691
+// [18065] AGCGFEGFDDGEEFE  token=0x06004692
+// [18066] DABDCDGEGBAEHFA  token=0x06004693
+// [18067] GAHCCCDGGFFEBCD  token=0x06004694
+// [18068] AEFCEGFDAFHGCAA  token=0x06004695
+// [18069] AGBDAEAHGGAEBDD  token=0x06004696
+// [18070] CCGAGGFBEAEGEED  token=0x06004697
+// [18071] FDGGFDCBHHGGGFB  token=0x06004698
+
+// === Axlebolt.Standoff.Cam.CameraMovementController ===
+// [32598] get_CBCAFCBCCBHHBHB  token=0x06007F57
+// [32599] set_CBCAFCBCCBHHBHB  token=0x06007F58
+// [32600] get_ABFGEDFHGFCHDHC  token=0x06007F59
+// [32601] set_ABFGEDFHGFCHDHC  token=0x06007F5A
+// [32602] get_FAFCFFABDEEBFAH  token=0x06007F5B
+// [32603] set_FAFCFFABDEEBFAH  token=0x06007F5C
+// [32604] get_FEFBACFFBEAHGCG  token=0x06007F5D
+// [32605] get_CEABHDEBDDBAADH  token=0x06007F5E
+// [32606] DHEEEGHFCFCECHB  token=0x06007F5F
+// [32607] CBCEHAAFFEADCFG  token=0x06007F60
+// [32608] BGEAGGBEFEGBEFE  token=0x06007F61
+// [32609] CGFHAGFBHFFBDBA  token=0x06007F62
+// [32610] EDCEFGEGAHEAAEG  token=0x06007F63
+// [32611] CFEFFHFFDFDHFBG  token=0x06007F64
+// [32612] BHDCEBGHGACBGFD  token=0x06007F65
+// [32613] HEGECDGEHFCFHHD  token=0x06007F66
+// [32614] Awake  token=0x06007F67
+// [32615] CECBGFBFBFEHFAB  token=0x06007F68
+// [32616] GDCHDDCCBHGCBAH  token=0x06007F69
+// [32617] DDHDHFDBFBHEAFB  token=0x06007F6A
+// [32618] GDCHDDCCBHGCBAH  token=0x06007F6B
+// [32619] AGABHEEEAEFDACB  token=0x06007F6C
+// [32620] CCDHBCADDCDDAED  token=0x06007F6D
+// [32621] GECADGHDEGBBBDD  token=0x06007F6E
+// [32622] GECADGHDEGBBBDD  token=0x06007F6F
+// [32623] HGHACBCCAEDFCAG  token=0x06007F70
+// [32624] BAHGHEAHCGCDHAD  token=0x06007F71
+// [32625] FFABACDBHGHHADH  token=0x06007F72
+// [32626] GBFCHCEAADHGGEE  token=0x06007F73
+// [32627] BBHDEHBDGEDGGAD  token=0x06007F74
+// [32628] Update  token=0x06007F75
+// [32629] FixedUpdate  token=0x06007F76
+// [32630] DEGAGGGEABDHHAD  token=0x06007F77
+// [32631] EEADFCADEGHFEED  token=0x06007F78
+// [32632] BCDFEBFGAAHFFAE  token=0x06007F79
+// [32633] GHDGGGFEFECHGFE  token=0x06007F7A
+// [32634] ADEFDEBFFGDABDG  token=0x06007F7B
+// [32635] Reset  token=0x06007F7C
+// [32636] FAEHGFCBBAGBAHE  token=0x06007F7D
+// [32637] GCHEFEFFGDECBAC  token=0x06007F7E
+// [32638] .ctor  token=0x06007F7F
+
+// === Fields near fieldStart candidate 2250 (PlayerController?) ===
+// field[2250] ADEDCEBBGEBBHFH  token=0x040008CB
+// field[2251] FDAAFGBFFHHCDAF  token=0x040008CC
+// field[2252] DECEHFADEFBDEHF  token=0x040008CD
+// field[2253] HHBECGCBAFFFHCG  token=0x040008CE
+// field[2254] flameFactory  token=0x040008CF
+// field[2255] mollyEffect  token=0x040008D0
+// field[2256] _003C_003E4__this  token=0x040008D1
+// field[2257] position  token=0x040008D2
+// field[2258] _003C_003E4__this  token=0x040008D3
+// field[2259] javaAssets  token=0x040008D4
+// field[2260] _003C_003E4__this  token=0x040008D5
+// field[2261] packageInfo  token=0x040008D6
+// field[2262] snapshot  token=0x040008D7
+// field[2263] javaAssets  token=0x040008D8
+// field[2264] CS_0024_003C_003E8__locals1  token=0x040008D9
+// field[2265] <>9  token=0x040008DA
+// field[2266] <>9__13_0  token=0x040008DB
+// field[2267] <>9__14_0  token=0x040008DC
+// field[2268] BFFGGBCFCHCGBCB  token=0x040008DD
+// field[2269] CEHGBHFFCFHCAFB  token=0x040008DE
+// field[2270] AFGDCEECAHDFCCH  token=0x040008DF
+// field[2271] <>1__state  token=0x040008E0
+// field[2272] <>2__current  token=0x040008E1
+// field[2273] <>4__this  token=0x040008E2
+// field[2274] CEDEGDEGEGHCAEB  token=0x040008E3
+// field[2275] GFEDEBEDGGFGCHA  token=0x040008E4
+// field[2276] value__  token=0x040008E5
+// field[2277] None  token=0x040008E6
+// field[2278] LevelUp  token=0x040008E7
+// field[2279] DropInGame  token=0x040008E8
+// field[2280] GoodGame  token=0x040008E9
+// field[2281] GetBonus  token=0x040008EA
+// field[2282] BattlePass  token=0x040008EB
+// field[2283] value__  token=0x040008EC
+// field[2284] ClipStart  token=0x040008ED
+// field[2285] ClipEnd  token=0x040008EE
+// field[2286] MagazineEnable  token=0x040008EF
+// field[2287] MagazineDisable  token=0x040008F0
+// field[2288] Marker1  token=0x040008F1
+// field[2289] Marker2  token=0x040008F2
+// field[2290] HCBBAHDHHCBDBDA  token=0x040008F3
+// field[2291] ACBEFBEBHFFBHAG  token=0x040008F4
+// field[2292] BFAGBGEGECDBEEA  token=0x040008F5
+// field[2293] DHFGDCCEFDAABCF  token=0x040008F6
+// field[2294] EEGFABBCCECAHDE  token=0x040008F7
+// field[2295] AFDGFFHEEFABAGD  token=0x040008F8
+// field[2296] AAGCEDHHDHAHFAC  token=0x040008F9
+// field[2297] FGBDEFCBEHDBFFD  token=0x040008FA
+// field[2298] CBCHGCDBCCBADBC  token=0x040008FB
+// field[2299] CBFHBCHBFDCHBHH  token=0x040008FC
+// field[2300] HDCDAFCCDECBADD  token=0x040008FD
+// field[2301] FAEHDHEHBFEFFGF  token=0x040008FE
+// field[2302] ADHGGEACHCCECCE  token=0x040008FF
+// field[2303] FDFGEGAFDHGDGHA  token=0x04000900
+// field[2304] HGGBCFADDAGGBGE  token=0x04000901
+// field[2305] BDHHFCEGCCADEHD  token=0x04000902
+// field[2306] GDDCEEEDAAGCBCA  token=0x04000903
+// field[2307] EABFCEEHFFHAFDE  token=0x04000904
+// field[2308] HBGEEEHHACGDCCG  token=0x04000905
+// field[2309] HCCCAHBGFADHDGA  token=0x04000906
+// field[2310] EADFBAEBAGCFGGC  token=0x04000907
+// field[2311] CABDDBBCGBFCBHA  token=0x04000908
+// field[2312] GHHBCGCFCDEEDBE  token=0x04000909
+// field[2313] DBCAGEDBEECBBDG  token=0x0400090A
+// field[2314] EEAHDDHDBFDEADD  token=0x0400090B
+// field[2315] CHDEGDBDEECFDEE  token=0x0400090C
+// field[2316] CFABEACEDEDFCAH  token=0x0400090D
+// field[2317] HDFHDCFDFFHEHBH  token=0x0400090E
+// field[2318] DECDAHFAHEFGDHG  token=0x0400090F
+// field[2319] HEDBCDBDFFEDGHE  token=0x04000910
+// field[2320] HBEGAEEDGAABFHA  token=0x04000911
+// field[2321] BHBHAFCHCDGFDAC  token=0x04000912
+// field[2322] BBFHFCEECHCBCGG  token=0x04000913
+// field[2323] GGACCDHFEHAACGG  token=0x04000914
+// field[2324] CHHGCEHEBBDDAEC  token=0x04000915
+// field[2325] CDFAGGECCEABACD  token=0x04000916
+// field[2326] AEGGCCFEGEACEFE  token=0x04000917
+// field[2327] DFFFBEEDFBFHHBH  token=0x04000918
+// field[2328] HCGGBGDGADBGFCD  token=0x04000919
+// field[2329] value__  token=0x0400091A
