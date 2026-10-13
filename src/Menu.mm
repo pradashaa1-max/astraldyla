@@ -172,22 +172,46 @@ static void rebuildPanel() {
     static dispatch_once_t once;
     dispatch_once(&once, ^{
         dispatch_async(dispatch_get_main_queue(), ^{ [ACH bootstrap]; });
-        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1.5 * NSEC_PER_SEC)),
-                       dispatch_get_main_queue(), ^{ [ACH bootstrap]; });
+        // retry a few times — scene may not be ready immediately after inject
+        for (int i = 1; i <= 6; i++) {
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(i * 1.0 * NSEC_PER_SEC)),
+                           dispatch_get_main_queue(), ^{ [ACH bootstrap]; });
+        }
     });
 }
 + (void)bootstrap {
     if (g_window) return;
-    CGRect screen = UIScreen.mainScreen.bounds;
-    if (screen.size.width < screen.size.height)
-        screen = CGRectMake(0,0, screen.size.height, screen.size.width);
-    ACW* win = [[ACW alloc] initWithFrame:screen];
+
+    // iOS 13+: window must be attached to a UIWindowScene or it never appears
+    UIWindowScene* scene = nil;
+    for (UIScene* s in UIApplication.sharedApplication.connectedScenes) {
+        if ([s isKindOfClass:UIWindowScene.class] &&
+            s.activationState == UISceneActivationStateForegroundActive) {
+            scene = (UIWindowScene*)s;
+            break;
+        }
+    }
+    if (!scene) {
+        for (UIScene* s in UIApplication.sharedApplication.connectedScenes) {
+            if ([s isKindOfClass:UIWindowScene.class]) {
+                scene = (UIWindowScene*)s;
+                break;
+            }
+        }
+    }
+    if (!scene) return; // will retry on the delayed call
+
+    CGRect screen = scene.coordinateSpace.bounds;
+    if (screen.size.width < 10 || screen.size.height < 10)
+        screen = UIScreen.mainScreen.bounds;
+
+    ACW* win = [[ACW alloc] initWithWindowScene:scene];
+    win.frame = screen;
     win.windowLevel = UIWindowLevelAlert + 1;
     win.backgroundColor = UIColor.clearColor;
     win.rootViewController = [ACVC new];
-    win.hidden = NO;
     // do NOT makeKeyAndVisible — keep game as key window so controls work
-    [win setHidden:NO];
+    win.hidden = NO;
     g_window = win;
 
     UIView* fab = [[UIView alloc] initWithFrame:CGRectMake(20, 80, 48, 48)];
