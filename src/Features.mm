@@ -8,8 +8,10 @@
 #include <cmath>
 #include <vector>
 
+extern UIView* Astral_SecureRoot;
+
 struct Vec3 { float x,y,z; };
-struct Vec4 { float x,y,z,w; };
+struct Vec4 { float x,y,z,w; }; // quaternion
 static inline float vlen(Vec3 v) { return sqrtf(v.x*v.x + v.y*v.y + v.z*v.z); }
 static inline Vec3 vsub(Vec3 a, Vec3 b) { return {a.x-b.x, a.y-b.y, a.z-b.z}; }
 static inline Vec3 vnorm(Vec3 v) {
@@ -71,13 +73,15 @@ static Vec3 w2s(void* cam, Vec3 w) {
 
 static Vec4 quat_look(Vec3 from, Vec3 to) {
     Vec3 f = vnorm(vsub(to, from));
+    // build look rotation (simplified yaw+pitch)
     float yaw = atan2f(f.x, f.z);
     float pitch = -asinf(fmodf(f.y, 1.0f));
     float cy = cosf(yaw*0.5f), sy = sinf(yaw*0.5f);
     float cp = cosf(pitch*0.5f), sp = sinf(pitch*0.5f);
-    return {sy*cp, cy*sp, sy*sp, cy*cp};
+    return {sy*cp, cy*sp, sy*sp, cy*cp}; // approx
 }
 
+// ---- IL2CPP ----
 using il2cpp_class_get_type_t = const void* (*)(Il2CppClass*);
 using il2cpp_type_get_object_t = Il2CppObject* (*)(const void*);
 using il2cpp_array_length_t = uint32_t (*)(void*);
@@ -100,6 +104,7 @@ static bool ensure_il2cpp_extra() {
     p_type_get_object = (il2cpp_type_get_object_t)sym("il2cpp_type_get_object");
     p_array_length = (il2cpp_array_length_t)sym("il2cpp_array_length");
     p_class_from_index = (il2cpp_class_from_index_t)sym("il2cpp_class_from_il2cpp_type");
+    // also try class_from_type index variants
     if (!p_class_from_index)
         p_class_from_index = (il2cpp_class_from_index_t)sym("il2cpp_class_from_index");
     return p_class_get_type && p_type_get_object;
@@ -213,7 +218,7 @@ static UILabel* g_debugLab = nil;
 
 void Astral_EnsureFOVOverlay(UIWindow* win) {
     if (!win) return;
-    UIView* root = win.rootViewController.view ?: win;
+    UIView* root = Astral_SecureRoot ?: (win.rootViewController.view ?: win);
     if (!g_fovView) {
         g_fovView = [[FOVOverlay alloc] initWithFrame:root.bounds];
         g_fovView.userInteractionEnabled = NO;
@@ -235,7 +240,15 @@ void Astral_EnsureFOVOverlay(UIWindow* win) {
 
 static NSMutableArray<UILabel*>* g_espLabels = nil;
 static void ensure_esp_pool(UIView* root) {
-    if (g_espLabels || !root) return;
+    UIView* parent = Astral_SecureRoot ?: root;
+    if (!parent) return;
+    if (g_espLabels) {
+        // reparent into secure root when hide-rec turns on
+        if (Astral_SecureRoot && g_espLabels.firstObject.superview != Astral_SecureRoot) {
+            for (UILabel* lab in g_espLabels) [Astral_SecureRoot addSubview:lab];
+        }
+        return;
+    }
     g_espLabels = [NSMutableArray new];
     for (int i = 0; i < 32; i++) {
         UILabel* lab = [[UILabel alloc] initWithFrame:CGRectZero];
@@ -246,7 +259,7 @@ static void ensure_esp_pool(UIView* root) {
         lab.layer.shadowColor = [UIColor blackColor].CGColor;
         lab.layer.shadowOpacity = 1;
         lab.layer.shadowRadius = 2;
-        [root addSubview:lab];
+        [parent addSubview:lab];
         [g_espLabels addObject:lab];
     }
 }
@@ -265,6 +278,14 @@ void Astral_FeaturesTick() {
     void* camTr = component_transform(cam);
     if (!camTr) return;
     Vec3 camPos = get_pos(camTr);
+
+    // keep overlays inside secure root (hide from screenshots/recording)
+    if (Astral_SecureRoot) {
+        if (g_fovView && g_fovView.superview != Astral_SecureRoot) [Astral_SecureRoot addSubview:g_fovView];
+        if (g_debugLab && g_debugLab.superview != Astral_SecureRoot) [Astral_SecureRoot addSubview:g_debugLab];
+        if (g_espLabels) for (UILabel* lab in g_espLabels)
+            if (lab.superview != Astral_SecureRoot) [Astral_SecureRoot addSubview:lab];
+    }
 
     auto players = find_players();
     if (g_debugLab) {
@@ -354,8 +375,10 @@ void Astral_FeaturesTick() {
 
     if (bestTarget && (g_aimbot.load() || g_silent.load())) {
         Vec3 targetPos = get_pos(bestTarget);
-        targetPos.y += 1.15f;
+        targetPos.y += 1.15f; // head-ish
+        // LookAt camera transform
         RVA<look_at_t>(Offsets::Transform_LookAt)(camTr, targetPos);
+        // also try set_rotation
         Vec4 q = quat_look(camPos, targetPos);
         RVA<set_rotation_t>(Offsets::Transform_set_rotation)(camTr, q);
     }
