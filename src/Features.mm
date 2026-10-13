@@ -43,6 +43,7 @@ static void* component_transform(void* c) {
     if (!c || !unity_base()) return nullptr;
     return RVA<get_transform_t>(Offsets::Component_get_transform)(c);
 }
+__attribute__((unused))
 static Vec3 w2s(void* cam, Vec3 w) {
     if (!cam || !unity_base()) return {};
     return RVA<world_to_screen_t>(Offsets::Camera_WorldToScreenPoint)(cam, w);
