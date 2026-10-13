@@ -171,71 +171,87 @@ static void rebuildPanel() {
 + (void)start {
     static dispatch_once_t once;
     dispatch_once(&once, ^{
-        dispatch_async(dispatch_get_main_queue(), ^{ [ACH bootstrap]; });
-        // retry a few times — scene may not be ready immediately after inject
-        for (int i = 1; i <= 6; i++) {
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(i * 1.0 * NSEC_PER_SEC)),
+        // aggressive retries — Unity can take a while to create scenes
+        for (int i = 0; i <= 15; i++) {
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(i * 0.8 * NSEC_PER_SEC)),
                            dispatch_get_main_queue(), ^{ [ACH bootstrap]; });
         }
     });
 }
-+ (void)bootstrap {
-    if (g_window) return;
 
-    // iOS 13+: window must be attached to a UIWindowScene or it never appears
-    UIWindowScene* scene = nil;
++ (UIWindow*)findHostWindow {
+    // Prefer key window of active scene
     for (UIScene* s in UIApplication.sharedApplication.connectedScenes) {
-        if ([s isKindOfClass:UIWindowScene.class] &&
-            s.activationState == UISceneActivationStateForegroundActive) {
-            scene = (UIWindowScene*)s;
-            break;
+        if (![s isKindOfClass:UIWindowScene.class]) continue;
+        UIWindowScene* ws = (UIWindowScene*)s;
+        for (UIWindow* w in ws.windows) {
+            if (w.isKeyWindow && !w.hidden) return w;
         }
+        if (ws.windows.count) return ws.windows.firstObject;
     }
-    if (!scene) {
-        for (UIScene* s in UIApplication.sharedApplication.connectedScenes) {
-            if ([s isKindOfClass:UIWindowScene.class]) {
-                scene = (UIWindowScene*)s;
-                break;
-            }
-        }
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+    if (UIApplication.sharedApplication.keyWindow)
+        return UIApplication.sharedApplication.keyWindow;
+    for (UIWindow* w in UIApplication.sharedApplication.windows)
+        if (!w.hidden) return w;
+#pragma clang diagnostic pop
+    return nil;
+}
+
++ (void)bootstrap {
+    if (g_fab) return; // already created
+
+    UIWindow* host = [ACH findHostWindow];
+    if (!host) return;
+
+    // Create our own overlay window attached to the same scene
+    UIWindowScene* scene = host.windowScene;
+    ACW* win = nil;
+    if (scene) {
+        win = [[ACW alloc] initWithWindowScene:scene];
+        win.frame = scene.coordinateSpace.bounds;
+    } else {
+        win = [[ACW alloc] initWithFrame:host.bounds];
     }
-    if (!scene) return; // will retry on the delayed call
-
-    CGRect screen = scene.coordinateSpace.bounds;
-    if (screen.size.width < 10 || screen.size.height < 10)
-        screen = UIScreen.mainScreen.bounds;
-
-    ACW* win = [[ACW alloc] initWithWindowScene:scene];
-    win.frame = screen;
-    win.windowLevel = UIWindowLevelAlert + 1;
+    win.windowLevel = UIWindowLevelStatusBar + 100;
     win.backgroundColor = UIColor.clearColor;
     win.rootViewController = [ACVC new];
-    // do NOT makeKeyAndVisible — keep game as key window so controls work
     win.hidden = NO;
     g_window = win;
 
-    UIView* fab = [[UIView alloc] initWithFrame:CGRectMake(20, 80, 48, 48)];
-    fab.backgroundColor = ACColor(0.12,0.14,0.20,0.92);
-    fab.layer.cornerRadius = 24;
-    fab.layer.borderWidth = 1.5;
-    fab.layer.borderColor = ACColor(0.35,0.55,1.0,0.9).CGColor;
+    // Bright obvious FAB so you can't miss it
+    CGFloat fabSize = 56;
+    UIView* fab = [[UIView alloc] initWithFrame:CGRectMake(16, 100, fabSize, fabSize)];
+    fab.backgroundColor = [UIColor colorWithRed:0.15 green:0.45 blue:1.0 alpha:0.95];
+    fab.layer.cornerRadius = fabSize / 2;
+    fab.layer.borderWidth = 2.5;
+    fab.layer.borderColor = [UIColor whiteColor].CGColor;
+    fab.layer.shadowColor = [UIColor blackColor].CGColor;
+    fab.layer.shadowOpacity = 0.6;
+    fab.layer.shadowRadius = 6;
+    fab.layer.shadowOffset = CGSizeMake(0, 3);
+    fab.userInteractionEnabled = YES;
+
     UILabel* fabLab = [[UILabel alloc] initWithFrame:fab.bounds];
     fabLab.text = @"A";
-    fabLab.textColor = ACColor(0.55,0.75,1.0,1);
-    fabLab.font = [UIFont systemFontOfSize:20 weight:UIFontWeightBold];
+    fabLab.textColor = UIColor.whiteColor;
+    fabLab.font = [UIFont systemFontOfSize:24 weight:UIFontWeightBlack];
     fabLab.textAlignment = NSTextAlignmentCenter;
     fabLab.userInteractionEnabled = NO;
     [fab addSubview:fabLab];
+
     [win addSubview:fab];
     g_fab = fab;
     [fab addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(toggleMenu)]];
     [fab addGestureRecognizer:[[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(dragFab:)]];
 
     UIView* panel = [[UIView alloc] initWithFrame:CGRectMake(80, 60, 280, 400)];
-    panel.backgroundColor = ACColor(0.08,0.09,0.12,0.94);
+    panel.backgroundColor = ACColor(0.08,0.09,0.12,0.96);
     panel.layer.cornerRadius = 14;
     panel.layer.borderWidth = 1;
     panel.layer.borderColor = ACColor(0.25,0.30,0.40,0.8).CGColor;
+    panel.hidden = !g_menuOpen.load();
     [win addSubview:panel];
     g_panel = panel;
     rebuildPanel();
@@ -250,13 +266,16 @@ static void rebuildPanel() {
             if (g_hideRec.load()) applyHideRecording(YES);
         }];
 }
+
 + (void)toggleMenu {
     bool open = !g_menuOpen.load();
     g_menuOpen.store(open);
-    g_panel.hidden = !open;
+    if (g_panel) g_panel.hidden = !open;
 }
+
 + (void)dragFab:(UIPanGestureRecognizer*)g {
     UIView* v = g.view;
+    if (!v.superview) return;
     CGPoint t = [g translationInView:v.superview];
     v.center = CGPointMake(v.center.x + t.x, v.center.y + t.y);
     [g setTranslation:CGPointZero inView:v.superview];
@@ -264,4 +283,19 @@ static void rebuildPanel() {
 @end
 
 __attribute__((constructor))
-static void astral_init() { [ACH start]; }
+static void astral_init() {
+    // TrollFools can load the dylib before UIKit is fully up — cover all cases
+    dispatch_async(dispatch_get_main_queue(), ^{ [ACH start]; });
+    [ACH start];
+
+    [[NSNotificationCenter defaultCenter]
+        addObserverForName:UIApplicationDidFinishLaunchingNotification
+                    object:nil
+                     queue:NSOperationQueue.mainQueue
+                usingBlock:^(__unused NSNotification* n) { [ACH start]; }];
+    [[NSNotificationCenter defaultCenter]
+        addObserverForName:UIApplicationDidBecomeActiveNotification
+                    object:nil
+                     queue:NSOperationQueue.mainQueue
+                usingBlock:^(__unused NSNotification* n) { [ACH start]; }];
+}
