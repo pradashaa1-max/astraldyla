@@ -1,3 +1,4 @@
+```objc
 // language: Objective-C++, file: Menu.mm, target: iOS arm64
 // Menu + landscape + hide-rec. hitTest passthrough so game buttons work.
 
@@ -39,7 +40,7 @@ std::atomic<bool> g_hideRec{false};
 std::atomic<float> g_fov{12.f};
 std::atomic<bool> g_menuOpen{true};
 
-static __weak ACW* g_window = nil;
+static __weak UIWindow* g_window = nil;
 static __weak UIView* g_panel = nil;
 static __weak UIView* g_fab = nil;
 
@@ -205,22 +206,13 @@ static void rebuildPanel() {
     UIWindow* host = [ACH findHostWindow];
     if (!host) return;
 
-    // Create our own overlay window attached to the same scene
-    UIWindowScene* scene = host.windowScene;
-    ACW* win = nil;
-    if (scene) {
-        win = [[ACW alloc] initWithWindowScene:scene];
-        win.frame = scene.coordinateSpace.bounds;
-    } else {
-        win = [[ACW alloc] initWithFrame:host.bounds];
-    }
-    win.windowLevel = UIWindowLevelStatusBar + 100;
-    win.backgroundColor = UIColor.clearColor;
-    win.rootViewController = [ACVC new];
-    win.hidden = NO;
-    g_window = win;
+    // Prefer attaching directly to the game's window (most reliable with TrollFools / Unity)
+    UIView* root = host.rootViewController.view ?: host;
+    if (!root) return;
 
-    // Bright obvious FAB so you can't miss it
+    g_window = host;
+
+    // Bright obvious FAB — hard to miss
     CGFloat fabSize = 56;
     UIView* fab = [[UIView alloc] initWithFrame:CGRectMake(16, 100, fabSize, fabSize)];
     fab.backgroundColor = [UIColor colorWithRed:0.15 green:0.45 blue:1.0 alpha:0.95];
@@ -228,10 +220,11 @@ static void rebuildPanel() {
     fab.layer.borderWidth = 2.5;
     fab.layer.borderColor = [UIColor whiteColor].CGColor;
     fab.layer.shadowColor = [UIColor blackColor].CGColor;
-    fab.layer.shadowOpacity = 0.6;
-    fab.layer.shadowRadius = 6;
+    fab.layer.shadowOpacity = 0.7;
+    fab.layer.shadowRadius = 8;
     fab.layer.shadowOffset = CGSizeMake(0, 3);
     fab.userInteractionEnabled = YES;
+    fab.tag = 0xA57A1; // unique tag
 
     UILabel* fabLab = [[UILabel alloc] initWithFrame:fab.bounds];
     fabLab.text = @"A";
@@ -241,20 +234,30 @@ static void rebuildPanel() {
     fabLab.userInteractionEnabled = NO;
     [fab addSubview:fabLab];
 
-    [win addSubview:fab];
+    [root addSubview:fab];
+    [root bringSubviewToFront:fab];
     g_fab = fab;
     [fab addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(toggleMenu)]];
     [fab addGestureRecognizer:[[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(dragFab:)]];
 
-    UIView* panel = [[UIView alloc] initWithFrame:CGRectMake(80, 60, 280, 400)];
+    UIView* panel = [[UIView alloc] initWithFrame:CGRectMake(80, 60, 280, 420)];
     panel.backgroundColor = ACColor(0.08,0.09,0.12,0.96);
     panel.layer.cornerRadius = 14;
     panel.layer.borderWidth = 1;
     panel.layer.borderColor = ACColor(0.25,0.30,0.40,0.8).CGColor;
     panel.hidden = !g_menuOpen.load();
-    [win addSubview:panel];
+    panel.tag = 0xA57A2;
+    [root addSubview:panel];
+    [root bringSubviewToFront:panel];
     g_panel = panel;
     rebuildPanel();
+
+    // keep FAB/panel on top if game adds views later
+    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2.0 * NSEC_PER_SEC)),
+                   dispatch_get_main_queue(), ^{
+        if (g_fab) [g_fab.superview bringSubviewToFront:g_fab];
+        if (g_panel) [g_panel.superview bringSubviewToFront:g_panel];
+    });
 
     [[NSNotificationCenter defaultCenter] addObserverForName:UIDeviceOrientationDidChangeNotification
         object:nil queue:NSOperationQueue.mainQueue usingBlock:^(__unused NSNotification* n){ forceLandscape(); }];
@@ -264,6 +267,8 @@ static void rebuildPanel() {
         object:nil queue:NSOperationQueue.mainQueue usingBlock:^(__unused NSNotification* n){
             forceLandscape();
             if (g_hideRec.load()) applyHideRecording(YES);
+            if (g_fab) [g_fab.superview bringSubviewToFront:g_fab];
+            if (g_panel) [g_panel.superview bringSubviewToFront:g_panel];
         }];
 }
 
@@ -299,3 +304,4 @@ static void astral_init() {
                      queue:NSOperationQueue.mainQueue
                 usingBlock:^(__unused NSNotification* n) { [ACH start]; }];
 }
+```
