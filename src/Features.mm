@@ -204,9 +204,11 @@ static void* local_player_from_list(const std::vector<void*>& list, void* camTr)
     CGContextRef ctx = UIGraphicsGetCurrentContext();
     if (!ctx) return;
     if (g_fovDraw.load()) {
-        CGFloat r = g_fov.load() * 8.0;
+        CGFloat shortSide = MIN(rect.size.width, rect.size.height);
+        // FOV 1..30 maps to ~3%..25% of short side
+        CGFloat r = shortSide * (0.03f + (g_fov.load() / 30.0f) * 0.22f);
         CGPoint c = CGPointMake(rect.size.width*0.5, rect.size.height*0.5);
-        CGContextSetStrokeColorWithColor(ctx, [UIColor colorWithRed:0.3 green:0.7 blue:1 alpha:0.7].CGColor);
+        CGContextSetStrokeColorWithColor(ctx, [UIColor colorWithRed:0.3 green:0.7 blue:1 alpha:0.75].CGColor);
         CGContextSetLineWidth(ctx, 1.5);
         CGContextStrokeEllipseInRect(ctx, CGRectMake(c.x-r, c.y-r, r*2, r*2));
     }
@@ -219,8 +221,10 @@ static UILabel* g_debugLab = nil;
 void Astral_EnsureFOVOverlay(UIWindow* win) {
     if (!win) return;
     UIView* root = Astral_SecureRoot ?: (win.rootViewController.view ?: win);
+    CGRect b = win.bounds;
+    if (b.size.width < 10) b = UIScreen.mainScreen.bounds;
     if (!g_fovView) {
-        g_fovView = [[FOVOverlay alloc] initWithFrame:root.bounds];
+        g_fovView = [[FOVOverlay alloc] initWithFrame:b];
         g_fovView.userInteractionEnabled = NO;
         g_fovView.backgroundColor = UIColor.clearColor;
         g_fovView.autoresizingMask = UIViewAutoresizingFlexibleWidth|UIViewAutoresizingFlexibleHeight;
@@ -228,12 +232,17 @@ void Astral_EnsureFOVOverlay(UIWindow* win) {
         CADisplayLink* link = [CADisplayLink displayLinkWithTarget:g_fovView selector:@selector(setNeedsDisplay)];
         link.preferredFramesPerSecond = 30;
         [link addToRunLoop:NSRunLoop.mainRunLoop forMode:NSRunLoopCommonModes];
+    } else {
+        g_fovView.frame = b;
+        if (g_fovView.superview != root) [root addSubview:g_fovView];
     }
     if (!g_debugLab) {
-        g_debugLab = [[UILabel alloc] initWithFrame:CGRectMake(8, 40, 220, 18)];
+        g_debugLab = [[UILabel alloc] initWithFrame:CGRectMake(8, 40, 260, 18)];
         g_debugLab.font = [UIFont monospacedSystemFontOfSize:11 weight:UIFontWeightMedium];
         g_debugLab.textColor = [UIColor colorWithWhite:1 alpha:0.55];
         g_debugLab.text = @"ASTRAL: init";
+        [root addSubview:g_debugLab];
+    } else if (g_debugLab.superview != root) {
         [root addSubview:g_debugLab];
     }
 }
