@@ -54,6 +54,7 @@ static Vec3 w2s(void* cam, Vec3 w) {
     if (!cam || !unity_base()) return {};
     return RVA<world_to_screen_t>(Offsets::Camera_WorldToScreenPoint)(cam, w);
 }
+__attribute__((unused))
 static Vec3 get_forward(void* tr) {
     if (!tr || !unity_base()) return {};
     return RVA<get_forward_t>(Offsets::Transform_get_forward)(tr);
