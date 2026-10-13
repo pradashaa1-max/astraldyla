@@ -1,4 +1,3 @@
-```objc
 // language: Objective-C++, file: Menu.mm, target: iOS arm64
 // Menu + landscape + hide-rec. hitTest passthrough so game buttons work.
 
@@ -20,7 +19,6 @@
 @implementation ACW
 - (UIView*)hitTest:(CGPoint)point withEvent:(UIEvent*)event {
     UIView* hit = [super hitTest:point withEvent:event];
-    // only FAB and panel (and their subviews) receive touches
     if (hit == self || hit == self.rootViewController.view) return nil;
     return hit;
 }
@@ -172,7 +170,6 @@ static void rebuildPanel() {
 + (void)start {
     static dispatch_once_t once;
     dispatch_once(&once, ^{
-        // aggressive retries — Unity can take a while to create scenes
         for (int i = 0; i <= 15; i++) {
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(i * 0.8 * NSEC_PER_SEC)),
                            dispatch_get_main_queue(), ^{ [ACH bootstrap]; });
@@ -181,7 +178,6 @@ static void rebuildPanel() {
 }
 
 + (UIWindow*)findHostWindow {
-    // Prefer key window of active scene
     for (UIScene* s in UIApplication.sharedApplication.connectedScenes) {
         if (![s isKindOfClass:UIWindowScene.class]) continue;
         UIWindowScene* ws = (UIWindowScene*)s;
@@ -201,18 +197,16 @@ static void rebuildPanel() {
 }
 
 + (void)bootstrap {
-    if (g_fab) return; // already created
+    if (g_fab) return;
 
     UIWindow* host = [ACH findHostWindow];
     if (!host) return;
 
-    // Prefer attaching directly to the game's window (most reliable with TrollFools / Unity)
     UIView* root = host.rootViewController.view ?: host;
     if (!root) return;
 
     g_window = host;
 
-    // Bright obvious FAB — hard to miss
     CGFloat fabSize = 56;
     UIView* fab = [[UIView alloc] initWithFrame:CGRectMake(16, 100, fabSize, fabSize)];
     fab.backgroundColor = [UIColor colorWithRed:0.15 green:0.45 blue:1.0 alpha:0.95];
@@ -224,7 +218,7 @@ static void rebuildPanel() {
     fab.layer.shadowRadius = 8;
     fab.layer.shadowOffset = CGSizeMake(0, 3);
     fab.userInteractionEnabled = YES;
-    fab.tag = 0xA57A1; // unique tag
+    fab.tag = 0xA57A1;
 
     UILabel* fabLab = [[UILabel alloc] initWithFrame:fab.bounds];
     fabLab.text = @"A";
@@ -252,7 +246,6 @@ static void rebuildPanel() {
     g_panel = panel;
     rebuildPanel();
 
-    // keep FAB/panel on top if game adds views later
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2.0 * NSEC_PER_SEC)),
                    dispatch_get_main_queue(), ^{
         if (g_fab) [g_fab.superview bringSubviewToFront:g_fab];
@@ -289,7 +282,6 @@ static void rebuildPanel() {
 
 __attribute__((constructor))
 static void astral_init() {
-    // TrollFools can load the dylib before UIKit is fully up — cover all cases
     dispatch_async(dispatch_get_main_queue(), ^{ [ACH start]; });
     [ACH start];
 
@@ -304,4 +296,3 @@ static void astral_init() {
                      queue:NSOperationQueue.mainQueue
                 usingBlock:^(__unused NSNotification* n) { [ACH start]; }];
 }
-```
