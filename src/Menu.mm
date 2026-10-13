@@ -1,13 +1,10 @@
 // language: Objective-C++, file: Menu.mm, target: iOS arm64
-// Menu + landscape + hide-rec. Features tick + FOV wired.
-
 #import <UIKit/UIKit.h>
 #import <QuartzCore/QuartzCore.h>
 #import <objc/runtime.h>
 #include "State.h"
 #include <cmath>
 
-// from Features.mm
 extern void Astral_FeaturesTick();
 extern void Astral_EnsureFOVOverlay(UIWindow* win);
 
@@ -15,104 +12,98 @@ extern void Astral_EnsureFOVOverlay(UIWindow* win);
 + (void)start;
 @end
 
-@interface ACVC : UIViewController
-@end
-
-@interface ACW : UIWindow
-@end
-@implementation ACW
-- (UIView*)hitTest:(CGPoint)point withEvent:(UIEvent*)event {
-    UIView* hit = [super hitTest:point withEvent:event];
-    if (hit == self || hit == self.rootViewController.view) return nil;
-    return hit;
-}
-- (UIInterfaceOrientationMask)supportedInterfaceOrientations {
-    return UIInterfaceOrientationMaskLandscape;
-}
-@end
-
 std::atomic<bool> g_aimbot{false};
 std::atomic<bool> g_silent{false};
-std::atomic<bool> g_fovDraw{false};
+std::atomic<bool> g_fovDraw{true};
 std::atomic<bool> g_espName{false};
 std::atomic<bool> g_espDist{false};
 std::atomic<bool> g_espSnap{false};
-std::atomic<bool> g_espTeam{false};
+std::atomic<bool> g_espTeam{true};
 std::atomic<bool> g_hideRec{false};
-std::atomic<float> g_fov{12.f};
+std::atomic<float> g_fov{15.f};
 std::atomic<bool> g_menuOpen{true};
 
 static __weak UIWindow* g_window = nil;
 static __weak UIView* g_panel = nil;
 static __weak UIView* g_fab = nil;
 static CADisplayLink* g_tick = nil;
+static UITextField* g_secureTF = nil;
 
-static void forceLandscape() {
-    if (@available(iOS 16.0, *)) {
-        for (UIScene* s in UIApplication.sharedApplication.connectedScenes) {
-            if (![s isKindOfClass:UIWindowScene.class]) continue;
-            UIWindowSceneGeometryPreferencesIOS* pref =
-                [[UIWindowSceneGeometryPreferencesIOS alloc]
-                    initWithInterfaceOrientations:UIInterfaceOrientationMaskLandscape];
-            [(UIWindowScene*)s requestGeometryUpdateWithPreferences:pref errorHandler:nil];
-            break;
-        }
-    }
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Wdeprecated-declarations"
-    [[UIDevice currentDevice] setValue:@(UIInterfaceOrientationLandscapeRight) forKey:@"orientation"];
-    [UIViewController attemptRotationToDeviceOrientation];
-#pragma clang diagnostic pop
+static UIColor* C(CGFloat r, CGFloat g, CGFloat b, CGFloat a) {
+    return [UIColor colorWithRed:r green:g blue:b alpha:a];
 }
 
 static void applyHideRecording(bool on) {
     dispatch_async(dispatch_get_main_queue(), ^{
-        UIWindow* key = nil;
+        g_hideRec.store(on);
         for (UIScene* s in UIApplication.sharedApplication.connectedScenes) {
             if (![s isKindOfClass:UIWindowScene.class]) continue;
             for (UIWindow* w in ((UIWindowScene*)s).windows) {
-                if (w.isKeyWindow) { key = w; break; }
+                if (on) {
+                    if (!objc_getAssociatedObject(w, "astral_sec")) {
+                        UITextField* tf = [[UITextField alloc] initWithFrame:w.bounds];
+                        tf.secureTextEntry = YES;
+                        tf.userInteractionEnabled = NO;
+                        tf.backgroundColor = UIColor.clearColor;
+                        [w addSubview:tf];
+                        [w sendSubviewToBack:tf];
+                        objc_setAssociatedObject(w, "astral_sec", tf, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+                        g_secureTF = tf;
+                    }
+                    if (g_panel) [g_panel.superview bringSubviewToFront:g_panel];
+                    if (g_fab) [g_fab.superview bringSubviewToFront:g_fab];
+                } else {
+                    UITextField* tf = objc_getAssociatedObject(w, "astral_sec");
+                    if (tf) {
+                        [tf removeFromSuperview];
+                        objc_setAssociatedObject(w, "astral_sec", nil, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+                    }
+                }
             }
+        }
+        UIWindow* key = nil;
+        for (UIScene* s in UIApplication.sharedApplication.connectedScenes) {
+            if (![s isKindOfClass:UIWindowScene.class]) continue;
+            for (UIWindow* w in ((UIWindowScene*)s).windows)
+                if (w.isKeyWindow) { key = w; break; }
             if (key) break;
         }
-        if (!key) key = UIApplication.sharedApplication.windows.firstObject;
-        if (on) {
-            if (!objc_getAssociatedObject(key, "astral_secure_tf")) {
-                UITextField* tf = [[UITextField alloc] initWithFrame:CGRectMake(0,0,1,1)];
-                tf.secureTextEntry = YES;
-                tf.userInteractionEnabled = NO;
-                tf.alpha = 0.01f;
-                [key addSubview:tf];
-                objc_setAssociatedObject(key, "astral_secure_tf", tf, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
-            }
-            if (g_window) g_window.windowLevel = UIWindowLevelAlert + 1;
-        } else {
-            id tf = objc_getAssociatedObject(key, "astral_secure_tf");
-            if ([tf isKindOfClass:UITextField.class]) {
-                [(UIView*)tf removeFromSuperview];
-                objc_setAssociatedObject(key, "astral_secure_tf", nil, OBJC_ASSOCIATION_RETAIN_NONATOMIC);
+        if (key && on && g_panel) {
+            UITextField* tf = objc_getAssociatedObject(key, "astral_sec");
+            if (tf) {
+                UIView* sec = nil;
+                for (UIView* v in tf.subviews) { sec = v; break; }
+                if (sec) {
+                    [sec addSubview:g_panel];
+                    if (g_fab) [sec addSubview:g_fab];
+                }
             }
         }
-        g_hideRec.store(on);
     });
 }
 
-static UIColor* ACColor(CGFloat r, CGFloat g, CGFloat b, CGFloat a) {
-    return [UIColor colorWithRed:r green:g blue:b alpha:a];
-}
+static UIView* makeRow(NSString* title, NSString* sub, bool on, void(^cb)(bool)) {
+    UIView* row = [[UIView alloc] initWithFrame:CGRectMake(10,0,300,54)];
+    row.backgroundColor = C(0.08,0.10,0.16,0.95);
+    row.layer.cornerRadius = 10;
+    row.layer.borderWidth = 1;
+    row.layer.borderColor = C(0.15,0.35,0.7,0.5).CGColor;
 
-static UIView* makeSwitchRow(NSString* title, bool initial, void(^onChange)(bool)) {
-    UIView* row = [[UIView alloc] initWithFrame:CGRectMake(0,0,280,40)];
-    UILabel* lab = [[UILabel alloc] initWithFrame:CGRectMake(12,0,180,40)];
-    lab.text = title;
-    lab.textColor = UIColor.whiteColor;
-    lab.font = [UIFont systemFontOfSize:14 weight:UIFontWeightMedium];
-    [row addSubview:lab];
-    UISwitch* sw = [[UISwitch alloc] initWithFrame:CGRectMake(210,5,51,31)];
-    sw.on = initial;
-    sw.onTintColor = ACColor(0.2,0.5,1.0,1);
+    UILabel* t = [[UILabel alloc] initWithFrame:CGRectMake(14,8,200,20)];
+    t.text = title; t.textColor = UIColor.whiteColor;
+    t.font = [UIFont systemFontOfSize:15 weight:UIFontWeightSemibold];
+    [row addSubview:t];
+
+    UILabel* s = [[UILabel alloc] initWithFrame:CGRectMake(14,28,200,16)];
+    s.text = sub; s.textColor = C(0.55,0.65,0.8,1);
+    s.font = [UIFont systemFontOfSize:11];
+    [row addSubview:s];
+
+    UISwitch* sw = [[UISwitch alloc] initWithFrame:CGRectMake(240,12,51,31)];
+    sw.on = on;
+    sw.onTintColor = C(0.2,0.5,1,1);
     [sw addAction:[UIAction actionWithHandler:^(__kindof UIAction* a) {
-        onChange(((UISwitch*)a.sender).on);
+        cb(((UISwitch*)a.sender).on);
     }] forControlEvents:UIControlEventValueChanged];
     [row addSubview:sw];
     return row;
@@ -122,44 +113,40 @@ static void rebuildPanel() {
     UIView* panel = g_panel;
     if (!panel) return;
     for (UIView* v in panel.subviews) [v removeFromSuperview];
-    CGFloat y = 12;
 
-    UIView* handle = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 280, 36)];
-    handle.backgroundColor = ACColor(0.12,0.18,0.28,1);
-    handle.tag = 8888;
-    UILabel* header = [[UILabel alloc] initWithFrame:CGRectMake(12,4,256,28)];
-    header.text = @"ASTRAL  ·  drag here";
-    header.textColor = ACColor(0.45,0.75,1.0,1);
-    header.font = [UIFont systemFontOfSize:16 weight:UIFontWeightBold];
-    header.textAlignment = NSTextAlignmentCenter;
-    header.userInteractionEnabled = NO;
-    [handle addSubview:header];
-    [panel addSubview:handle];
-    y = 42;
+    UIView* head = [[UIView alloc] initWithFrame:CGRectMake(0,0,320,48)];
+    head.backgroundColor = C(0.06,0.12,0.22,1);
+    UILabel* title = [[UILabel alloc] initWithFrame:CGRectMake(0,10,320,28)];
+    title.text = @"ASTRAL CHEATS";
+    title.textColor = C(0.4,0.75,1,1);
+    title.font = [UIFont systemFontOfSize:18 weight:UIFontWeightBlack];
+    title.textAlignment = NSTextAlignmentCenter;
+    [head addSubview:title];
+    [panel addSubview:head];
 
+    CGFloat y = 56;
     auto add = [&](UIView* row) {
-        row.frame = CGRectMake(0, y, 280, 40);
+        row.frame = CGRectMake(10, y, 300, 54);
         [panel addSubview:row];
-        y += 42;
+        y += 60;
     };
-    add(makeSwitchRow(@"Aim bot", g_aimbot.load(), ^(bool v){ g_aimbot.store(v); }));
-    add(makeSwitchRow(@"Silent aim", g_silent.load(), ^(bool v){ g_silent.store(v); }));
-    add(makeSwitchRow(@"FOV Circle", g_fovDraw.load(), ^(bool v){ g_fovDraw.store(v); }));
-    add(makeSwitchRow(@"ESP Name", g_espName.load(), ^(bool v){ g_espName.store(v); }));
-    add(makeSwitchRow(@"ESP Distance", g_espDist.load(), ^(bool v){ g_espDist.store(v); }));
-    add(makeSwitchRow(@"Snaplines", g_espSnap.load(), ^(bool v){ g_espSnap.store(v); }));
-    add(makeSwitchRow(@"Team check", g_espTeam.load(), ^(bool v){ g_espTeam.store(v); }));
-    add(makeSwitchRow(@"Hide Recording", g_hideRec.load(), ^(bool v){ applyHideRecording(v); }));
+    add(makeRow(@"Aim bot", @"Auto aim at enemies", g_aimbot.load(), ^(bool v){ g_aimbot.store(v); }));
+    add(makeRow(@"Silent aim", @"Hidden aim assist", g_silent.load(), ^(bool v){ g_silent.store(v); }));
+    add(makeRow(@"FOV Circle", @"Show aim FOV", g_fovDraw.load(), ^(bool v){ g_fovDraw.store(v); }));
+    add(makeRow(@"ESP Name", @"Show enemy tags", g_espName.load(), ^(bool v){ g_espName.store(v); }));
+    add(makeRow(@"ESP Distance", @"Show distance", g_espDist.load(), ^(bool v){ g_espDist.store(v); }));
+    add(makeRow(@"Team check", @"Skip teammates", g_espTeam.load(), ^(bool v){ g_espTeam.store(v); }));
+    add(makeRow(@"Hide Recording", @"Hide menu from screen record", g_hideRec.load(), ^(bool v){ applyHideRecording(v); }));
 
-    UILabel* fl = [[UILabel alloc] initWithFrame:CGRectMake(12,y,100,24)];
+    UILabel* fl = [[UILabel alloc] initWithFrame:CGRectMake(20,y,80,24)];
     fl.text = [NSString stringWithFormat:@"FOV %.0f", g_fov.load()];
     fl.textColor = UIColor.whiteColor;
-    fl.font = [UIFont systemFontOfSize:13];
+    fl.font = [UIFont systemFontOfSize:13 weight:UIFontWeightMedium];
     fl.tag = 9001;
     [panel addSubview:fl];
-    UISlider* sl = [[UISlider alloc] initWithFrame:CGRectMake(100,y,160,30)];
+    UISlider* sl = [[UISlider alloc] initWithFrame:CGRectMake(100,y,200,30)];
     sl.minimumValue = 1; sl.maximumValue = 30; sl.value = g_fov.load();
-    sl.minimumTrackTintColor = ACColor(0.2,0.5,1.0,1);
+    sl.minimumTrackTintColor = C(0.25,0.55,1,1);
     [sl addAction:[UIAction actionWithHandler:^(__kindof UIAction* a) {
         float v = ((UISlider*)a.sender).value;
         g_fov.store(v);
@@ -167,24 +154,24 @@ static void rebuildPanel() {
     }] forControlEvents:UIControlEventValueChanged];
     [panel addSubview:sl];
     y += 40;
-    panel.frame = CGRectMake(panel.frame.origin.x, panel.frame.origin.y, 280, y + 12);
-}
 
-@implementation ACVC
-- (UIInterfaceOrientationMask)supportedInterfaceOrientations { return UIInterfaceOrientationMaskLandscape; }
-- (BOOL)shouldAutorotate { return YES; }
-- (void)viewDidLoad {
-    [super viewDidLoad];
-    self.view.backgroundColor = UIColor.clearColor;
+    UILabel* tip = [[UILabel alloc] initWithFrame:CGRectMake(10,y,300,20)];
+    tip.text = @"Drag header to move · A button toggles";
+    tip.textColor = C(0.4,0.5,0.6,1);
+    tip.font = [UIFont systemFontOfSize:10];
+    tip.textAlignment = NSTextAlignmentCenter;
+    [panel addSubview:tip];
+    y += 28;
+
+    panel.frame = CGRectMake(panel.frame.origin.x, panel.frame.origin.y, 320, y + 8);
 }
-@end
 
 @implementation ACH
 + (void)start {
     static dispatch_once_t once;
     dispatch_once(&once, ^{
-        for (int i = 0; i <= 15; i++) {
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(i * 0.8 * NSEC_PER_SEC)),
+        for (int i = 0; i <= 20; i++) {
+            dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(i * 0.6 * NSEC_PER_SEC)),
                            dispatch_get_main_queue(), ^{ [ACH bootstrap]; });
         }
     });
@@ -194,9 +181,8 @@ static void rebuildPanel() {
     for (UIScene* s in UIApplication.sharedApplication.connectedScenes) {
         if (![s isKindOfClass:UIWindowScene.class]) continue;
         UIWindowScene* ws = (UIWindowScene*)s;
-        for (UIWindow* w in ws.windows) {
+        for (UIWindow* w in ws.windows)
             if (w.isKeyWindow && !w.hidden) return w;
-        }
         if (ws.windows.count) return ws.windows.firstObject;
     }
 #pragma clang diagnostic push
@@ -209,85 +195,56 @@ static void rebuildPanel() {
     return nil;
 }
 
-+ (void)onTick {
-    Astral_FeaturesTick();
-}
++ (void)onTick { Astral_FeaturesTick(); }
 
 + (void)bootstrap {
     if (g_fab) return;
-
     UIWindow* host = [ACH findHostWindow];
     if (!host) return;
-
     UIView* root = host.rootViewController.view ?: host;
     if (!root) return;
-
     g_window = host;
 
     Astral_EnsureFOVOverlay(host);
-
     if (!g_tick) {
         g_tick = [CADisplayLink displayLinkWithTarget:self selector:@selector(onTick)];
         g_tick.preferredFramesPerSecond = 60;
         [g_tick addToRunLoop:NSRunLoop.mainRunLoop forMode:NSRunLoopCommonModes];
     }
 
-    CGFloat fabSize = 56;
-    UIView* fab = [[UIView alloc] initWithFrame:CGRectMake(16, 100, fabSize, fabSize)];
-    fab.backgroundColor = [UIColor colorWithRed:0.12 green:0.40 blue:0.95 alpha:0.95];
-    fab.layer.cornerRadius = fabSize / 2;
-    fab.layer.borderWidth = 2.5;
-    fab.layer.borderColor = [UIColor whiteColor].CGColor;
-    fab.layer.shadowColor = [UIColor blackColor].CGColor;
-    fab.layer.shadowOpacity = 0.7;
-    fab.layer.shadowRadius = 8;
-    fab.layer.shadowOffset = CGSizeMake(0, 3);
-    fab.userInteractionEnabled = YES;
-    fab.tag = 0xA57A1;
-
-    UILabel* fabLab = [[UILabel alloc] initWithFrame:fab.bounds];
-    fabLab.text = @"A";
-    fabLab.textColor = UIColor.whiteColor;
-    fabLab.font = [UIFont systemFontOfSize:24 weight:UIFontWeightBlack];
-    fabLab.textAlignment = NSTextAlignmentCenter;
-    fabLab.userInteractionEnabled = NO;
-    [fab addSubview:fabLab];
-
+    UIView* fab = [[UIView alloc] initWithFrame:CGRectMake(18, 110, 54, 54)];
+    fab.backgroundColor = C(0.12,0.42,0.98,0.95);
+    fab.layer.cornerRadius = 27;
+    fab.layer.borderWidth = 2;
+    fab.layer.borderColor = UIColor.whiteColor.CGColor;
+    fab.layer.shadowOpacity = 0.6; fab.layer.shadowRadius = 6;
+    UILabel* fl = [[UILabel alloc] initWithFrame:fab.bounds];
+    fl.text = @"A"; fl.textColor = UIColor.whiteColor;
+    fl.font = [UIFont systemFontOfSize:22 weight:UIFontWeightBlack];
+    fl.textAlignment = NSTextAlignmentCenter;
+    fl.userInteractionEnabled = NO;
+    [fab addSubview:fl];
     [root addSubview:fab];
     [root bringSubviewToFront:fab];
     g_fab = fab;
     [fab addGestureRecognizer:[[UITapGestureRecognizer alloc] initWithTarget:self action:@selector(toggleMenu)]];
-    [fab addGestureRecognizer:[[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(dragFab:)]];
+    [fab addGestureRecognizer:[[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(drag:)]];
 
-    UIView* panel = [[UIView alloc] initWithFrame:CGRectMake(80, 60, 280, 420)];
-    panel.backgroundColor = ACColor(0.06,0.08,0.12,0.96);
-    panel.layer.cornerRadius = 14;
+    UIView* panel = [[UIView alloc] initWithFrame:CGRectMake(80, 50, 320, 520)];
+    panel.backgroundColor = C(0.04,0.06,0.10,0.97);
+    panel.layer.cornerRadius = 16;
     panel.layer.borderWidth = 1.5;
-    panel.layer.borderColor = ACColor(0.2,0.45,0.9,0.85).CGColor;
+    panel.layer.borderColor = C(0.2,0.45,0.95,0.8).CGColor;
+    panel.layer.shadowOpacity = 0.5; panel.layer.shadowRadius = 12;
     panel.hidden = !g_menuOpen.load();
-    panel.tag = 0xA57A2;
-    panel.userInteractionEnabled = YES;
     [root addSubview:panel];
     [root bringSubviewToFront:panel];
     g_panel = panel;
     rebuildPanel();
+    [panel addGestureRecognizer:[[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(drag:)]];
 
-    UIPanGestureRecognizer* panPanel = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(dragPanel:)];
-    [panel addGestureRecognizer:panPanel];
-
-    dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2.0 * NSEC_PER_SEC)),
-                   dispatch_get_main_queue(), ^{
-        if (g_fab) [g_fab.superview bringSubviewToFront:g_fab];
-        if (g_panel) [g_panel.superview bringSubviewToFront:g_panel];
-    });
-
-    [[NSNotificationCenter defaultCenter] addObserverForName:UIDeviceOrientationDidChangeNotification
-        object:nil queue:NSOperationQueue.mainQueue usingBlock:^(__unused NSNotification* n){ forceLandscape(); }];
-    [[UIDevice currentDevice] beginGeneratingDeviceOrientationNotifications];
-    forceLandscape();
     [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification
         object:nil queue:NSOperationQueue.mainQueue usingBlock:^(__unused NSNotification* n){
-            forceLandscape();
             if (g_hideRec.load()) applyHideRecording(YES);
             if (g_fab) [g_fab.superview bringSubviewToFront:g_fab];
             if (g_panel) [g_panel.superview bringSubviewToFront:g_panel];
@@ -299,16 +256,7 @@ static void rebuildPanel() {
     g_menuOpen.store(open);
     if (g_panel) g_panel.hidden = !open;
 }
-
-+ (void)dragFab:(UIPanGestureRecognizer*)g {
-    UIView* v = g.view;
-    if (!v.superview) return;
-    CGPoint t = [g translationInView:v.superview];
-    v.center = CGPointMake(v.center.x + t.x, v.center.y + t.y);
-    [g setTranslation:CGPointZero inView:v.superview];
-}
-
-+ (void)dragPanel:(UIPanGestureRecognizer*)g {
++ (void)drag:(UIPanGestureRecognizer*)g {
     UIView* v = g.view;
     if (!v.superview) return;
     CGPoint t = [g translationInView:v.superview];
@@ -321,15 +269,10 @@ __attribute__((constructor))
 static void astral_init() {
     dispatch_async(dispatch_get_main_queue(), ^{ [ACH start]; });
     [ACH start];
-
-    [[NSNotificationCenter defaultCenter]
-        addObserverForName:UIApplicationDidFinishLaunchingNotification
-                    object:nil
-                     queue:NSOperationQueue.mainQueue
-                usingBlock:^(__unused NSNotification* n) { [ACH start]; }];
-    [[NSNotificationCenter defaultCenter]
-        addObserverForName:UIApplicationDidBecomeActiveNotification
-                    object:nil
-                     queue:NSOperationQueue.mainQueue
-                usingBlock:^(__unused NSNotification* n) { [ACH start]; }];
+    [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidFinishLaunchingNotification
+        object:nil queue:NSOperationQueue.mainQueue
+        usingBlock:^(__unused NSNotification* n){ [ACH start]; }];
+    [[NSNotificationCenter defaultCenter] addObserverForName:UIApplicationDidBecomeActiveNotification
+        object:nil queue:NSOperationQueue.mainQueue
+        usingBlock:^(__unused NSNotification* n){ [ACH start]; }];
 }
