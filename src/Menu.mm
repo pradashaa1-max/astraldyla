@@ -1,11 +1,15 @@
 // language: Objective-C++, file: Menu.mm, target: iOS arm64
-// Menu + landscape + hide-rec. hitTest passthrough so game buttons work.
+// Menu + landscape + hide-rec. Features tick + FOV wired.
 
 #import <UIKit/UIKit.h>
 #import <QuartzCore/QuartzCore.h>
 #import <objc/runtime.h>
 #include "State.h"
 #include <cmath>
+
+// from Features.mm
+extern void Astral_FeaturesTick();
+extern void Astral_EnsureFOVOverlay(UIWindow* win);
 
 @interface ACH : NSObject
 + (void)start;
@@ -41,6 +45,7 @@ std::atomic<bool> g_menuOpen{true};
 static __weak UIWindow* g_window = nil;
 static __weak UIView* g_panel = nil;
 static __weak UIView* g_fab = nil;
+static CADisplayLink* g_tick = nil;
 
 static void forceLandscape() {
     if (@available(iOS 16.0, *)) {
@@ -105,7 +110,7 @@ static UIView* makeSwitchRow(NSString* title, bool initial, void(^onChange)(bool
     [row addSubview:lab];
     UISwitch* sw = [[UISwitch alloc] initWithFrame:CGRectMake(210,5,51,31)];
     sw.on = initial;
-    sw.onTintColor = ACColor(0.35,0.55,1.0,1);
+    sw.onTintColor = ACColor(0.2,0.5,1.0,1);
     [sw addAction:[UIAction actionWithHandler:^(__kindof UIAction* a) {
         onChange(((UISwitch*)a.sender).on);
     }] forControlEvents:UIControlEventValueChanged];
@@ -118,13 +123,20 @@ static void rebuildPanel() {
     if (!panel) return;
     for (UIView* v in panel.subviews) [v removeFromSuperview];
     CGFloat y = 12;
-    UILabel* header = [[UILabel alloc] initWithFrame:CGRectMake(12,y,256,28)];
-    header.text = @"ASTRAL";
-    header.textColor = ACColor(0.55,0.75,1.0,1);
-    header.font = [UIFont systemFontOfSize:18 weight:UIFontWeightBold];
+
+    UIView* handle = [[UIView alloc] initWithFrame:CGRectMake(0, 0, 280, 36)];
+    handle.backgroundColor = ACColor(0.12,0.18,0.28,1);
+    handle.tag = 8888;
+    UILabel* header = [[UILabel alloc] initWithFrame:CGRectMake(12,4,256,28)];
+    header.text = @"ASTRAL  ·  drag here";
+    header.textColor = ACColor(0.45,0.75,1.0,1);
+    header.font = [UIFont systemFontOfSize:16 weight:UIFontWeightBold];
     header.textAlignment = NSTextAlignmentCenter;
-    [panel addSubview:header];
-    y += 36;
+    header.userInteractionEnabled = NO;
+    [handle addSubview:header];
+    [panel addSubview:handle];
+    y = 42;
+
     auto add = [&](UIView* row) {
         row.frame = CGRectMake(0, y, 280, 40);
         [panel addSubview:row];
@@ -138,6 +150,7 @@ static void rebuildPanel() {
     add(makeSwitchRow(@"Snaplines", g_espSnap.load(), ^(bool v){ g_espSnap.store(v); }));
     add(makeSwitchRow(@"Team check", g_espTeam.load(), ^(bool v){ g_espTeam.store(v); }));
     add(makeSwitchRow(@"Hide Recording", g_hideRec.load(), ^(bool v){ applyHideRecording(v); }));
+
     UILabel* fl = [[UILabel alloc] initWithFrame:CGRectMake(12,y,100,24)];
     fl.text = [NSString stringWithFormat:@"FOV %.0f", g_fov.load()];
     fl.textColor = UIColor.whiteColor;
@@ -146,7 +159,7 @@ static void rebuildPanel() {
     [panel addSubview:fl];
     UISlider* sl = [[UISlider alloc] initWithFrame:CGRectMake(100,y,160,30)];
     sl.minimumValue = 1; sl.maximumValue = 30; sl.value = g_fov.load();
-    sl.minimumTrackTintColor = ACColor(0.35,0.55,1.0,1);
+    sl.minimumTrackTintColor = ACColor(0.2,0.5,1.0,1);
     [sl addAction:[UIAction actionWithHandler:^(__kindof UIAction* a) {
         float v = ((UISlider*)a.sender).value;
         g_fov.store(v);
@@ -196,6 +209,10 @@ static void rebuildPanel() {
     return nil;
 }
 
++ (void)onTick {
+    Astral_FeaturesTick();
+}
+
 + (void)bootstrap {
     if (g_fab) return;
 
@@ -207,9 +224,17 @@ static void rebuildPanel() {
 
     g_window = host;
 
+    Astral_EnsureFOVOverlay(host);
+
+    if (!g_tick) {
+        g_tick = [CADisplayLink displayLinkWithTarget:self selector:@selector(onTick)];
+        g_tick.preferredFramesPerSecond = 60;
+        [g_tick addToRunLoop:NSRunLoop.mainRunLoop forMode:NSRunLoopCommonModes];
+    }
+
     CGFloat fabSize = 56;
     UIView* fab = [[UIView alloc] initWithFrame:CGRectMake(16, 100, fabSize, fabSize)];
-    fab.backgroundColor = [UIColor colorWithRed:0.15 green:0.45 blue:1.0 alpha:0.95];
+    fab.backgroundColor = [UIColor colorWithRed:0.12 green:0.40 blue:0.95 alpha:0.95];
     fab.layer.cornerRadius = fabSize / 2;
     fab.layer.borderWidth = 2.5;
     fab.layer.borderColor = [UIColor whiteColor].CGColor;
@@ -235,16 +260,20 @@ static void rebuildPanel() {
     [fab addGestureRecognizer:[[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(dragFab:)]];
 
     UIView* panel = [[UIView alloc] initWithFrame:CGRectMake(80, 60, 280, 420)];
-    panel.backgroundColor = ACColor(0.08,0.09,0.12,0.96);
+    panel.backgroundColor = ACColor(0.06,0.08,0.12,0.96);
     panel.layer.cornerRadius = 14;
-    panel.layer.borderWidth = 1;
-    panel.layer.borderColor = ACColor(0.25,0.30,0.40,0.8).CGColor;
+    panel.layer.borderWidth = 1.5;
+    panel.layer.borderColor = ACColor(0.2,0.45,0.9,0.85).CGColor;
     panel.hidden = !g_menuOpen.load();
     panel.tag = 0xA57A2;
+    panel.userInteractionEnabled = YES;
     [root addSubview:panel];
     [root bringSubviewToFront:panel];
     g_panel = panel;
     rebuildPanel();
+
+    UIPanGestureRecognizer* panPanel = [[UIPanGestureRecognizer alloc] initWithTarget:self action:@selector(dragPanel:)];
+    [panel addGestureRecognizer:panPanel];
 
     dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(2.0 * NSEC_PER_SEC)),
                    dispatch_get_main_queue(), ^{
@@ -272,6 +301,14 @@ static void rebuildPanel() {
 }
 
 + (void)dragFab:(UIPanGestureRecognizer*)g {
+    UIView* v = g.view;
+    if (!v.superview) return;
+    CGPoint t = [g translationInView:v.superview];
+    v.center = CGPointMake(v.center.x + t.x, v.center.y + t.y);
+    [g setTranslation:CGPointZero inView:v.superview];
+}
+
++ (void)dragPanel:(UIPanGestureRecognizer*)g {
     UIView* v = g.view;
     if (!v.superview) return;
     CGPoint t = [g translationInView:v.superview];
